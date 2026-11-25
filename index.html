@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Billion Dollar XI</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- PWA: installable app ("Add to Home Screen") -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0d1512">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Billion XI">
 </head>
 <body>
   <header class="topbar">
@@ -33,5 +42,8 @@
 
   <script src="data.js"></script>
   <script src="game.js?v=2"></script>
+  <script>
+    if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+  </script>
 </body>
 </html>
