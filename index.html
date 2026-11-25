@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Billion Dollar XI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">⚽ Billion Dollar XI</div>
+    <div id="season-info" class="season-info"></div>
+    <button id="btn-new" class="btn ghost" hidden>New game</button>
+  </header>
+  <nav id="timeline" class="timeline"></nav>
+
+  <main class="layout">
+    <section id="panel-you" class="team-panel you"></section>
+    <section id="stage" class="stage" aria-live="polite"></section>
+    <section id="panel-bot" class="team-panel bot"></section>
+  </main>
+
+  <section class="bottom">
+    <div class="card">
+      <h3>Portfolio history</h3>
+      <div id="history"></div>
+    </div>
+    <div class="card">
+      <h3>Transfer log</h3>
+      <ul id="log" class="log"></ul>
+    </div>
+  </section>
+
+  <script src="data.js"></script>
+  <script src="game.js?v=2"></script>
+</body>
+</html>
