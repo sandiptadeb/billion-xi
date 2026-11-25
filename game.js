@@ -688,6 +688,39 @@ function applyRegions(r) {
   document.querySelectorAll("[data-left]").forEach(el => { el.dataset.deadline = Date.now() + +el.dataset.left; });
   tickCountdowns();
   document.title = r.yourTurn ? "🔔 Your turn – Billion Dollar XI" : "Billion Dollar XI";
+  afterRender(r);
+}
+
+// ---- Mobile layout: one view at a time (Play / Squad / Players / Log) with a bottom tab bar ----
+const MOBILE = matchMedia("(max-width: 760px)");
+const MV = { lastKey: null, moreOpen: {} };
+function setView(v) {
+  document.body.dataset.view = v;
+  document.querySelectorAll("#tabbar [data-view]").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("#tabbar [data-view]");
+  if (b) { setView(b.dataset.view); scrollTo(0, 0); }
+});
+setView("play");
+
+function afterRender(r) {
+  // Keep the current season visible in the timeline strip.
+  const tl = $("#timeline"), now = tl && tl.querySelector(".chip.now");
+  if (now) tl.scrollLeft = now.offsetLeft - (tl.clientWidth - now.offsetWidth) / 2;
+  // Long help notes start folded on phones; remember if the player opened one.
+  document.querySelectorAll("details.more").forEach(d => {
+    const k = d.dataset.k;
+    if (MOBILE.matches) d.open = !!MV.moreOpen[k];
+    d.addEventListener("toggle", () => { if (MOBILE.matches) MV.moreOpen[k] = d.open; });
+  });
+  if (r.key && r.key !== MV.lastKey) {
+    MV.lastKey = r.key;
+    if (MOBILE.matches) {
+      if (r.focus) setView("play");
+      if (document.body.dataset.view === "play") scrollTo(0, 0);
+    }
+  }
 }
 
 function tickCountdowns() {
@@ -724,6 +757,9 @@ function renderRegions(me) {
   return {
     info: headerHtml(), timeline: timelineHtml(), left: leftPanelHtml(me), right: participantsHtml(me),
     history: historyHtml(me), log: logHtml(), stage: stageHtml(me), yourTurn: myTurn || myReview,
+    // Mobile layout: a new screen (key) brings the player back to the Play tab when it needs them.
+    key: [S.phase, S.mode, S.season, S.roundNo, S.turnIdx, S.actor, S.handoff && S.handoff.id].join("|"),
+    focus: !S.online || myTurn || myReview,
   };
 }
 
@@ -871,7 +907,7 @@ function waitingHtml(me) {
     <div class="handoff">
       <div class="big-emoji">⏳</div>
       <h2>Waiting for ${esc(t.name)}…</h2>
-      <p class="sub">${esc(t.name)} is ${doing}.${me !== null ? " Your squad is on the left." : ""}</p>
+      <p class="sub">${esc(t.name)} is ${doing}.${me !== null ? " You can check your squad meanwhile." : ""}</p>
       ${dropped ? `<p class="down"><b>${esc(t.name)} has disconnected.</b> They can rejoin with the same room code and pick up where they left off.</p>` : ""}
       ${dropped && hostView ? `<button class="btn ghost" data-act="botTakeover" data-arg="${t.id}">Let a bot take over ${esc(t.name)}'s seat</button>` : ""}
     </div>`;
@@ -929,8 +965,8 @@ function pickHtml() {
     <h2>${humans().length > 1 ? `${esc(t.name)}: ` : ""}${title}</h2>
     ${S.pickDeadline ? `<div class="countdown" data-left="${Math.max(0, S.pickDeadline - Date.now())}">⏱ <span class="secs">${Math.max(0, Math.ceil((S.pickDeadline - Date.now()) / 1000))}</span>s left, then the first available player is signed automatically</div>` : ""}
     <p class="sub">Cash ${fmt(t.budget)} · You can spend up to <b>${fmt(Math.max(0, max))}</b> (${fmt(RESERVE_PER_SLOT)} is held back for each other open slot) · ${openSlots(t)} open slot(s)</p>
-    ${S.gameMode === "scout" ? `<p class="note">🔭 League, age and avg rating are locked. Your next unlock costs <b>${fmt(scoutCost(t))}</b>, paid from your cash (${SCOUT_PRICING}). Only you see what you unlock. Unlocks so far: <b>${t.scoutCount}</b> · Scouting bills: <b>${fmt(t.scoutBills)}</b><br>
-      🌟 Superstar Scout (${fmt(SPECIAL_SCOUTS.superstar.cost)}, valuation trend for the next two seasons): <b>${t.specialLeft.superstar} use${t.specialLeft.superstar === 1 ? "" : "s"} left</b> · 🧢 Amateur Scout (${fmt(SPECIAL_SCOUTS.amateur.cost)}, age as a 3-year range): <b>${t.specialLeft.amateur} use${t.specialLeft.amateur === 1 ? "" : "s"} left</b></p>` : ""}
+    ${S.gameMode === "scout" ? `<details class="more" data-k="scout" open><summary>🔭 Scouting: next unlock <b>${fmt(scoutCost(t))}</b></summary><p class="note">🔭 League, age and avg rating are locked. Your next unlock costs <b>${fmt(scoutCost(t))}</b>, paid from your cash (${SCOUT_PRICING}). Only you see what you unlock. Unlocks so far: <b>${t.scoutCount}</b> · Scouting bills: <b>${fmt(t.scoutBills)}</b><br>
+      🌟 Superstar Scout (${fmt(SPECIAL_SCOUTS.superstar.cost)}, valuation trend for the next two seasons): <b>${t.specialLeft.superstar} use${t.specialLeft.superstar === 1 ? "" : "s"} left</b> · 🧢 Amateur Scout (${fmt(SPECIAL_SCOUTS.amateur.cost)}, age as a 3-year range): <b>${t.specialLeft.amateur} use${t.specialLeft.amateur === 1 ? "" : "s"} left</b></p></details>` : ""}
     ${effectsHtml(t)}
     ${S.pool.length ? `<div class="pool">${cards}</div>` : `<p>No ${POS_NAME[S.pickPos]}s are left this season.</p>`}
     <div class="actions"><button class="btn ghost" data-act="pass">${passLabel}</button></div>`;
@@ -1152,7 +1188,7 @@ function endHtml(me) {
   const scoutMode = S.gameMode === "scout";
   return `
     <div class="banner">${banner}</div>
-    <p class="sub" style="text-align:center">🔓 All identities and values revealed. Portfolio = cash + squad value + captain bonus (the captain's value change counted a second time). The full season-by-season history is in the Portfolio history panel below.</p>
+    <p class="sub" style="text-align:center">🔓 All identities and values revealed. Portfolio = cash + squad value + captain bonus (the captain's value change counted a second time). The full season-by-season history is in the Portfolio history panel.</p>
     <div class="scroll-x"><table>
       <tr><th>#</th><th>Participant</th>${scoutMode ? `<th class="num">Scouting bills</th>` : ""}<th class="num">Cash</th><th class="num">Squad (summer 2026)</th><th class="num">© Captain bonus</th><th class="num">Portfolio</th><th class="num">Return</th></tr>
       ${ranked.map((t, i) => `<tr><td>${i + 1}</td><td><b>${esc(t.name)}</b> <span class="tag">${typeLabel(t)}</span></td>${scoutMode ? `<td class="num down">${t.scoutBills ? "−" + fmt(t.scoutBills) : fmt(0)}</td>` : ""}<td class="num">${fmt(t.budget)}</td><td class="num">${fmt(squadValue(t))}</td><td class="num ${cls(captainBonus(t))}">${captainOf(t) ? fmtDelta(captainBonus(t)) : "–"}</td><td class="num"><b>${fmt(netWorth(t))}</b></td><td class="num ${cls(netWorth(t) - BUDGET)}">${pct(netWorth(t), BUDGET)}</td></tr>`).join("")}
@@ -1214,6 +1250,7 @@ function renderPreGame() {
   $("#panel-bot").innerHTML = `<h2>Participants</h2><p class="note">2–${MAX_PARTICIPANTS} participants, humans or bots.</p>`;
   $("#btn-new").hidden = true;
   document.title = "Billion Dollar XI";
+  if (MV.lastKey !== null) { MV.lastKey = null; setView("play"); }   // back from a game: show the setup
   const st = $("#stage");
   if (NET && NET.role === "host") return renderHostLobby(st);
   if (NET && NET.role === "guest") return renderGuestStatus(st);
@@ -1461,6 +1498,7 @@ const METERED_API_KEY = "83e36e9eebc30730e0cd2408fee234914f5a";
 const TURN_SERVERS = [];
 const STUN_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
+  
   { urls: "stun:stun1.l.google.com:19302" },
   { urls: "stun:stun.cloudflare.com:3478" },
 ];

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Billion Dollar XI</title>
   <link rel="stylesheet" href="styles.css">
   <!-- PWA: installable app ("Add to Home Screen") -->
@@ -40,8 +40,16 @@
     </div>
   </section>
 
+  <!-- Phones only: one view at a time instead of one long page -->
+  <nav id="tabbar" class="tabbar" aria-label="Views">
+    <button data-view="play"><span>⚽</span>Play</button>
+    <button data-view="squad"><span>👕</span>Squad</button>
+    <button data-view="players"><span>👥</span>Players</button>
+    <button data-view="log"><span>📜</span>Log</button>
+  </nav>
+
   <script src="data.js"></script>
-  <script src="game.js?v=2"></script>
+  <script src="game.js?v=3"></script>
   <script>
     if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
   </script>

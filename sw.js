@@ -1,9 +1,9 @@
 // Service worker: lets the installed app open offline (local play).
 // Network-first: when online you always get the latest version from GitHub Pages; the cache is
 // only a fallback when there's no connection. Online play still needs the internet.
-const CACHE = "billion-xi-v1";
+const CACHE = "billion-xi-v2";
 const FILES = [
-  "./", "index.html", "styles.css", "data.js", "game.js?v=2", "manifest.webmanifest",
+  "./", "index.html", "styles.css", "data.js", "game.js?v=3", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png",
 ];
 

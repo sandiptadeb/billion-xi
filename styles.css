@@ -228,3 +228,88 @@ s.was { color: var(--muted); font-size: 14px; font-weight: 600; }
 tr.cap-row td { background: rgba(255, 215, 90, 0.08); }
 .banner { font-size: 28px; font-weight: 900; text-align: center; margin: 6px 0 14px; }
 .note { color: var(--muted); font-size: 12px; }
+
+/* Foldable help note (folded by default on phones only) */
+details.more { margin: 6px 0; }
+details.more > summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+details.more > summary b { color: var(--accent-2); }
+details.more > .note { margin: 4px 0 0; }
+
+/* ================= PHONE LAYOUT =================
+   One view at a time (Play / Squad / Players / Log) picked from a bottom tab bar,
+   with compact screens so a turn fits without scrolling up and down. */
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  body { font-size: 13px; padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+  .btn { padding: 9px 14px; }
+  input, select { font-size: 16px !important; }        /* stops iPhone zooming in on inputs */
+
+  /* compact sticky header; the brand hides once a game shows its season info */
+  .topbar { position: sticky; top: 0; z-index: 5; padding: 8px 10px; gap: 8px; }
+  .brand { font-size: 15px; white-space: nowrap; }
+  .topbar:has(.season-info:not(:empty)) .brand { display: none; }
+  .season-info { font-size: 12px; text-align: left; line-height: 1.3; }
+  #btn-new { padding: 5px 10px; font-size: 12px; white-space: nowrap; }
+
+  /* season strip: one thin swipeable line, current season kept in view */
+  .timeline { position: relative; gap: 4px; padding: 6px 8px 0; scrollbar-width: none; }
+  .timeline::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; min-width: 58px; padding: 3px 6px; font-size: 11px; }
+  .chip small { font-size: 9px; }
+
+  /* only the chosen view is shown */
+  .layout { display: block; padding: 8px; }
+  .team-panel, .stage, .bottom { display: none; }
+  body[data-view="play"] #stage,
+  body[data-view="squad"] #panel-you,
+  body[data-view="players"] #panel-bot { display: block; }
+  body[data-view="log"] .bottom { display: grid; gap: 8px; padding: 8px; }
+  .team-panel, .stage, .card { padding: 10px; border-radius: 10px; }
+  .log { max-height: none; }
+
+  /* bottom tab bar */
+  .tabbar {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--panel); border-top: 1px solid var(--line);
+    padding: 4px 4px env(safe-area-inset-bottom);
+  }
+  .tabbar button {
+    flex: 1; background: none; border: 0; color: var(--muted); padding: 6px 0 4px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 11px; font-weight: 600;
+  }
+  .tabbar button span { font-size: 19px; line-height: 1.1; }
+  .tabbar button[aria-current="page"] { color: var(--accent); }
+
+  /* stage text */
+  .stage h2 { font-size: 16px; line-height: 1.3; margin-bottom: 4px; }
+  .stage .sub { font-size: 12px; margin-bottom: 8px; }
+  .actions { margin-top: 10px; gap: 8px; }
+  .actions .btn { flex: 1 1 auto; }
+
+  /* prospects: one compact row each, all five fit on screen together
+     left column: name, league, stats, scouting · right column: price above the Invest button */
+  .pool { grid-template-columns: 1fr; gap: 6px; }
+  /* row 1: name · league · price   rows 2+: stats and scouting, with Invest on the right */
+  .prospect { display: grid; grid-template-columns: auto 1fr auto; column-gap: 8px; row-gap: 3px; padding: 7px 10px; border-radius: 10px; align-items: center; }
+  .prospect > * { grid-column: 1 / 3; }
+  .prospect .hdr { grid-column: 1; grid-row: 1; }
+  .prospect .hdr .tag { display: none; }                 /* the position is already in the heading */
+  .prospect .letter { font-size: 14px; white-space: nowrap; }
+  .prospect .league { grid-column: 2; grid-row: 1; font-size: 12px; min-width: 0; }
+  .prospect .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 3px; font-size: 12px; line-height: 1.3; }
+  .prospect .stats b { margin-right: 7px; }
+  .prospect .specials, .prospect .trend { margin: 0; }
+  .prospect .btn.scout, .prospect .btn.special { padding: 0 6px; line-height: 1.6; font-size: 11px; }
+  .prospect .price { grid-column: 3; grid-row: 1; text-align: right; font-size: 16px; line-height: 1.1; white-space: nowrap; }
+  .prospect .price s.was { font-size: 11px; }
+  .prospect > .btn { grid-column: 3; grid-row: 2 / span 4; align-self: center; padding: 8px 14px; }
+
+  /* tables and the pitch */
+  table { font-size: 11.5px; }
+  th, td { padding: 5px 3px; }
+  td .note { font-size: 10px; }
+  .slot { max-width: none; min-height: 52px; }
+  .reveal .box { padding: 10px; }
+  .handoff { padding: 16px 6px; }
+  .handoff .big-emoji { font-size: 44px; }
+}
